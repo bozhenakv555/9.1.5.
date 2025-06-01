@@ -6,22 +6,25 @@
 typedef struct{
 unsigned int rows;
 unsigned int cols;
-float *elem;
+int *elem;
 }MAT;
-
-MAT mat;
 
 #define ELEM(mat,i,j) ((mat).elem[(i)*(mat).cols+(j)])
 
 MAT *mat_create_with_type(unsigned int rows, unsigned int cols){
+	if (rows == 0 || cols == 0){
+		return NULL;
+	}
+	
+	
 	MAT *mat = (MAT*)malloc(sizeof(MAT));
 	if (mat == NULL){
 		return NULL;
 	}
 	mat->rows = rows;
 	mat->cols = cols;
-	mat->elem = (float*)malloc(rows*cols*sizeof(float));
-	if(mat->elem == NULL){
+	mat->elem = (int*)malloc(rows*cols*sizeof(int));
+	if (mat->elem == NULL){
 		free(mat);
 		return NULL;
 	}
@@ -29,7 +32,7 @@ MAT *mat_create_with_type(unsigned int rows, unsigned int cols){
 }
 
 void mat_free(MAT *mat){
-	if(mat != NULL){
+	if (mat != NULL){
 		if(mat->elem != NULL){
 			free(mat->elem);
 		}
@@ -46,6 +49,9 @@ int mat_is_square_or_not(MAT *mat){
 }
 
 void mat_generate_random_int_elems(MAT *mat, int min, int max){
+	if (mat == NULL || mat->elem == NULL){
+		return;
+	}
 	for (unsigned int i = 0; i < mat->rows; i++){
 		for(unsigned int j = 0; j < mat->cols; j++){
 			ELEM(*mat,i,j) = min + rand()% (max-min+1);
@@ -53,12 +59,12 @@ void mat_generate_random_int_elems(MAT *mat, int min, int max){
 	}
 }
 
-float mat_determinant(MAT *mat){
-	if(mat == NULL || mat_is_square_or_not(mat) == 0){
+int mat_determinant(MAT *mat){
+	if(mat == NULL || mat->elem == NULL || mat_is_square_or_not(mat) == 0){
 		return 0;
 	}
 	unsigned int n = mat->rows;
-	float det = 0;
+	int det = 0;
 	
 	if (n == 1){
 		det = ELEM(mat, 0, 0);
@@ -89,8 +95,8 @@ float mat_determinant(MAT *mat){
 		}else{
 			sign = -1;
 		}
-		float minor_det = mat_determinant(minor);
-		float term_det = sign * ELEM(*mat, 0, ji0) * minor_det;
+		int minor_det = mat_determinant(minor);
+		int term_det = sign * ELEM(*mat, 0, ji0) * minor_det;
 		det = det + term_det;
 		mat_free(minor);
 	    }
@@ -104,22 +110,25 @@ char mat_create_random_unimodular_integer(MAT *mat){
 		return 0;
 	}
     MAT *temp_mat = mat_create_with_type(mat->rows, mat->cols);
-	
+	if (temp_mat == NULL){
+		return 0;
+	}
 	int attempts = 0;
 	int maxpocet_attempts = 1000;
 	while (attempts < maxpocet_attempts){
 		mat_generate_random_int_elems(temp_mat, -10, 10);
-		float det = mat_determinant(temp_mat);
-		if (abs(det) == 1.0){
+		int det = mat_determinant(temp_mat);
+		if (abs(det) == 1){
 			for (unsigned int i = 0; i < mat->rows; i++){
 			   for (unsigned int j = 0; j < mat->cols; j++){
-			       ELEM(*mat, i, j) = ELEM(*temp, i, j);
+			       ELEM(*mat, i, j) = ELEM(*temp_mat, i, j);
 			   }	
 			}
-		    mat_free(temp);
+		    mat_free(temp_mat);
 		    return 1;
 		}
 		attempts++;
 	}
+	mat_free(temp_mat);
 	return 0;
 }
