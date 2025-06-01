@@ -36,3 +36,15 @@ void mat_free(MAT *mat){
 	free(mat);
 	}
 }
+
+int mat_is_square_or_not(MAT *mat){
+	if(mat->rows == mat->cols){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+char mat_create_random_unimodular_integer(MAT *mat){
+	if(mat_is_square_or_not(mat)==1)
+}
