@@ -53,8 +53,54 @@ void mat_generate_random_int_elems (MAT *mat, int min, int max){
 	}
 }
 
+float mat_determinant (MAT *mat){
+	if(mat == NULL || mat_is_square_or_not(mat) == 0){
+		return 0;
+	}
+	unsigned int n = mat->rows;
+	float det = 0;
+	
+	if (n == 1){
+		det = ELEM(mat, 0, 0);
+	}
+	
+	if (n == 2){
+		det = ELEM(mat, 0, 0)*ELEM(mat, 1, 1)-ELEM(mat, 0, 1)*ELEM(mat, 1, 0);
+	}
+	
+	if (n > 2){
+		for (unsigned int ji0 = 0; ji0 < n; ji0++){
+		MAT *minor = mat_create_with_type(n-1, n-1);
+		unsigned int minor_i = 0;
+		for (unsigned int i = 1; i < n; i++){
+			unsigned int minor_j = 0;
+			for (unsigned int j = 0; j < n; j++){
+				if(j == ji0){
+					continue;
+				}
+				ELEM(*minor, minor_i, minor_j) = ELEM(*mat, i, j);
+				minor_j++;
+			}
+			minor_i++;
+		}	
+		int sign;
+		if(ji0 % 2 == 0){
+			sign = 1;
+		}else{
+			sign = -1;
+		}
+		float minor_det = mat_determinat(minor);
+		float term_det = sign * ELEM(*mat, 0, ji0) * minor_det;
+		det = det + term_det;
+		mat_free(minor);
+	    }
+	}
+return det;
+}
+
+
 char mat_create_random_unimodular_integer(MAT *mat){
-	if(mat == NULL && mat_is_square_or_not(mat) == 0){
+	if(mat == NULL || mat_is_square_or_not(mat) == 0){
 		return 0;
 	}
 }
