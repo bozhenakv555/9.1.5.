@@ -28,3 +28,11 @@ MAT *mat_create_with_type(unsigned int rows, unsigned int cols){
 	return mat;
 }
 
+void mat_free(MAT *mat){
+	if(mat != NULL){
+		if(mat->elem != NULL){
+			free(mat->elem);
+		}
+	free(mat);
+	}
+}
