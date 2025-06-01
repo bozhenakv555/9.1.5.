@@ -45,7 +45,7 @@ int mat_is_square_or_not(MAT *mat){
 	}
 }
 
-void mat_generate_random_int_elems (MAT *mat, int min, int max){
+void mat_generate_random_int_elems(MAT *mat, int min, int max){
 	for (unsigned int i = 0; i < mat->rows; i++){
 		for(unsigned int j = 0; j < mat->cols; j++){
 			ELEM(*mat,i,j) = min + rand()% (max-min+1);
@@ -53,7 +53,7 @@ void mat_generate_random_int_elems (MAT *mat, int min, int max){
 	}
 }
 
-float mat_determinant (MAT *mat){
+float mat_determinant(MAT *mat){
 	if(mat == NULL || mat_is_square_or_not(mat) == 0){
 		return 0;
 	}
@@ -89,7 +89,7 @@ float mat_determinant (MAT *mat){
 		}else{
 			sign = -1;
 		}
-		float minor_det = mat_determinat(minor);
+		float minor_det = mat_determinant(minor);
 		float term_det = sign * ELEM(*mat, 0, ji0) * minor_det;
 		det = det + term_det;
 		mat_free(minor);
@@ -103,4 +103,23 @@ char mat_create_random_unimodular_integer(MAT *mat){
 	if(mat == NULL || mat_is_square_or_not(mat) == 0){
 		return 0;
 	}
+    MAT *temp_mat = mat_create_with_type(mat->rows, mat->cols);
+	
+	int attempts = 0;
+	int maxpocet_attempts = 1000;
+	while (attempts < maxpocet_attempts){
+		mat_generate_random_int_elems(temp_mat, -10, 10);
+		float det = mat_determinant(temp_mat);
+		if (abs(det) == 1.0){
+			for (unsigned int i = 0; i < mat->rows; i++){
+			   for (unsigned int j = 0; j < mat->cols; j++){
+			       ELEM(*mat, i, j) = ELEM(*temp, i, j);
+			   }	
+			}
+		    mat_free(temp);
+		    return 1;
+		}
+		attempts++;
+	}
+	return 0;
 }
