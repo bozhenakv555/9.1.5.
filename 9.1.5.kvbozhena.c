@@ -9,7 +9,7 @@ unsigned int cols;
 int *elem;
 }MAT;
 
-#define ELEM(mat,i,j) ((mat).elem[(i)*(mat).cols+(j)])
+#define ELEM(mat,i,j) ((mat)->elem[(i)*(mat)->cols+(j)])
 
 MAT *mat_create_with_type(unsigned int rows, unsigned int cols){
 	if (rows == 0 || cols == 0){
@@ -54,7 +54,7 @@ void mat_generate_random_int_elems(MAT *mat, int min, int max){
 	}
 	for (unsigned int i = 0; i < mat->rows; i++){
 		for(unsigned int j = 0; j < mat->cols; j++){
-			ELEM(*mat,i,j) = min + rand()% (max-min+1);
+			ELEM(mat,i,j) = min + rand()% (max-min+1);
 		}
 	}
 }
@@ -84,7 +84,7 @@ int mat_determinant(MAT *mat){
 				if(j == ji0){
 					continue;
 				}
-				ELEM(*minor, minor_i, minor_j) = ELEM(*mat, i, j);
+				ELEM(minor, minor_i, minor_j) = ELEM(mat, i, j);
 				minor_j++;
 			}
 			minor_i++;
@@ -96,7 +96,7 @@ int mat_determinant(MAT *mat){
 			sign = -1;
 		}
 		int minor_det = mat_determinant(minor);
-		int term_det = sign * ELEM(*mat, 0, ji0) * minor_det;
+		int term_det = sign * ELEM(mat, 0, ji0) * minor_det;
 		det = det + term_det;
 		mat_free(minor);
 	    }
@@ -121,7 +121,7 @@ char mat_create_random_unimodular_integer(MAT *mat){
 		if (abs(det) == 1){
 			for (unsigned int i = 0; i < mat->rows; i++){
 			   for (unsigned int j = 0; j < mat->cols; j++){
-			       ELEM(*mat, i, j) = ELEM(*temp_mat, i, j);
+			       ELEM(mat, i, j) = ELEM(temp_mat, i, j);
 			   }	
 			}
 		    mat_free(temp_mat);
@@ -131,4 +131,33 @@ char mat_create_random_unimodular_integer(MAT *mat){
 	}
 	mat_free(temp_mat);
 	return 0;
+}
+
+void mat_print(MAT *mat){
+	for (unsigned int i = 0; i < mat->rows; i++){
+		for (unsigned int j = 0; j < mat->cols; j++){
+			printf("%4d", ELEM(mat, i, j));
+	    }
+	printf("\n");
+   }
+}
+
+int main (){
+	srand(time(NULL));
+	unsigned int size = 3;
+	MAT *mat = mat_create_with_type(size, size);
+	if (mat == NULL){
+		printf("Nepodarilo sa vytvorit maticu.\n");
+		return 0;
+	}
+	if (mat_create_random_unimodular_integer(mat) == 1){
+		printf("Vygenerovana unimodularna matica:\n");
+		mat_print(mat);
+		int det = mat_determinant(mat);
+		printf("Jej determinant: %d\n", det);
+	}else{
+		printf("Nepodarilo sa vygenerovat unimodularnu maticu po 1000 pokusoch.\n");
+	}
+	mat_free(mat);
+	return 1;
 }
