@@ -6,7 +6,7 @@
 typedef struct{
 unsigned int rows;
 unsigned int cols;
-int *elem;
+float *elem;
 }MAT;
 
 #define ELEM(mat,i,j) ((mat)->elem[(i)*(mat)->cols+(j)])
@@ -23,7 +23,7 @@ MAT *mat_create_with_type(unsigned int rows, unsigned int cols){
 	}
 	mat->rows = rows;
 	mat->cols = cols;
-	mat->elem = (int*)malloc(rows*cols*sizeof(int));
+	mat->elem = (float*)malloc(rows*cols*sizeof(float));
 	if (mat->elem == NULL){
 		free(mat);
 		return NULL;
@@ -46,6 +46,9 @@ int mat_is_square_or_not(MAT *mat){
 	}else{
 		return 0;
 	}
+	if(mat == NULL){
+		return 0;
+	}
 }
 
 void mat_generate_random_int_elems(MAT *mat, int min, int max){
@@ -54,7 +57,8 @@ void mat_generate_random_int_elems(MAT *mat, int min, int max){
 	}
 	for (unsigned int i = 0; i < mat->rows; i++){
 		for(unsigned int j = 0; j < mat->cols; j++){
-			ELEM(mat,i,j) = min + rand()% (max-min+1);
+		int el = min + rand() % (max - min + 1);
+		ELEM(mat,i,j) = (float)el;
 		}
 	}
 }
@@ -67,11 +71,11 @@ int mat_determinant(MAT *mat){
 	int det = 0;
 	
 	if (n == 1){
-		det = ELEM(mat, 0, 0);
+		det = (int)ELEM(mat, 0, 0);
 	}
 	
 	if (n == 2){
-		det = ELEM(mat, 0, 0)*ELEM(mat, 1, 1)-ELEM(mat, 0, 1)*ELEM(mat, 1, 0);
+		det = (int)ELEM(mat, 0, 0)*ELEM(mat, 1, 1)-ELEM(mat, 0, 1)*ELEM(mat, 1, 0);
 	}
 	
 	if (n > 2){
@@ -96,7 +100,7 @@ int mat_determinant(MAT *mat){
 			sign = -1;
 		}
 		int minor_det = mat_determinant(minor);
-		int term_det = sign * ELEM(mat, 0, ji0) * minor_det;
+		int term_det = sign * (int)ELEM(mat, 0, ji0) * minor_det;
 		det = det + term_det;
 		mat_free(minor);
 	    }
@@ -119,6 +123,19 @@ char mat_create_random_unimodular_integer(MAT *mat){
 		mat_generate_random_int_elems(temp_mat, -10, 10);
 		int det = mat_determinant(temp_mat);
 		if (abs(det) == 1){
+			int all_int = 1;
+			for (unsigned int i = 0; i < temp_mat->rows; i++){
+			   if (all_int == 0){
+			    	break;
+			   }
+			   for (unsigned int j = 0; j < temp_mat->cols; j++){
+			      float element = ELEM(temp_mat, i, j);
+			      if (element != floorf(element)){
+			   	  all_int = 0;
+			   	  break;
+			      }
+	    	    }
+    	    }
 			for (unsigned int i = 0; i < mat->rows; i++){
 			   for (unsigned int j = 0; j < mat->cols; j++){
 			       ELEM(mat, i, j) = ELEM(temp_mat, i, j);
@@ -136,7 +153,7 @@ char mat_create_random_unimodular_integer(MAT *mat){
 void mat_print(MAT *mat){
 	for (unsigned int i = 0; i < mat->rows; i++){
 		for (unsigned int j = 0; j < mat->cols; j++){
-			printf("%4d", ELEM(mat, i, j));
+			printf("%4.0f", ELEM(mat, i, j));
 	    }
 	printf("\n");
    }
@@ -148,7 +165,7 @@ int main (){
 	MAT *mat = mat_create_with_type(size, size);
 	if (mat == NULL){
 		printf("Nepodarilo sa vytvorit maticu.\n");
-		return 0;
+		return 1;
 	}
 	if (mat_create_random_unimodular_integer(mat) == 1){
 		printf("Vygenerovana unimodularna matica:\n");
@@ -159,5 +176,5 @@ int main (){
 		printf("Nepodarilo sa vygenerovat unimodularnu maticu po 1000 pokusoch.\n");
 	}
 	mat_free(mat);
-	return 1;
+	return 0;
 }
